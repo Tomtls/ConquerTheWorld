@@ -30,11 +30,28 @@ public class App extends JPanel{
         
         JPanel uiJPanel = new JPanel();
         uiJPanel.setLayout(null);
-        uiJPanel.add(test());
+
+    //    uiJPanel.add(test());
+
+        uiJPanel.add(createImgButton("BW", 450, 550));
+        uiJPanel.add(createImgButton("BY", 504, 509));
+
         add(uiJPanel, BorderLayout.CENTER);
         
-
     }
+
+    public JButton createImgButton(String imgName, int x, int y){
+        try {
+            BufferedImage img = ImageIO.read(new File("src/img/" + imgName + ".png"));
+            JButton button = ImageButton.createImgButton(img);
+            button.setBounds(x,y,img.getWidth(),img.getHeight());
+            return button;
+         } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+         }
+    }
+
     public JButton test(){
         try {
             BufferedImage test = ImageIO.read(new File("src/img/image.png"));

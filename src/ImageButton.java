@@ -33,6 +33,8 @@ public class ImageButton {
         });
         
         btn.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
         
         return btn;
     }
