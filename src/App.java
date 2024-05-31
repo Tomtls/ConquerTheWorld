@@ -32,9 +32,20 @@ public class App extends JPanel{
         uiJPanel.setLayout(null);
 
     //    uiJPanel.add(test());
-
-        uiJPanel.add(createImgButton("BW", 450, 550));
-        uiJPanel.add(createImgButton("BY", 504, 509));
+        int x = 310;
+        int y = 100;
+        uiJPanel.add(createImgButton("SH", x, y));
+        uiJPanel.add(createImgButton("MV", x+232, y+91));
+        uiJPanel.add(createImgButton("NI", x-219, y+197));
+        uiJPanel.add(createImgButton("BB", x+305, y+266));
+        uiJPanel.add(createImgButton("SA", x+223, y+365));
+        uiJPanel.add(createImgButton("NRW", x-309, y+458));
+        uiJPanel.add(createImgButton("SN", x+378, y+617));
+        uiJPanel.add(createImgButton("HE", x-91, y+619));
+        uiJPanel.add(createImgButton("TH", x+150, y+626));
+        uiJPanel.add(createImgButton("RP", x-283, y+748));
+        uiJPanel.add(createImgButton("BY", x*44, y+815));
+        uiJPanel.add(createImgButton("BW", x-124, y+950));
 
         add(uiJPanel, BorderLayout.CENTER);
         
@@ -45,18 +56,6 @@ public class App extends JPanel{
             BufferedImage img = ImageIO.read(new File("src/img/" + imgName + ".png"));
             JButton button = ImageButton.createImgButton(img);
             button.setBounds(x,y,img.getWidth(),img.getHeight());
-            return button;
-         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-         }
-    }
-
-    public JButton test(){
-        try {
-            BufferedImage test = ImageIO.read(new File("src/img/image.png"));
-            JButton button = ImageButton.createImgButton(test);
-            button.setBounds(100,100,test.getWidth(),test.getHeight());
             return button;
          } catch (Exception e) {
             e.printStackTrace();
