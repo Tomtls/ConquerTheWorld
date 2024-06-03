@@ -1,66 +1,42 @@
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import java.io.File;
 
 public class ImageButton {
+    public static JButton createImageButton(int imgNumber, int[] initialPosition) {
+        try {
+            BufferedImage img = ImageIO.read(new File("src/imgNumber/" + imgNumber + ".png"));
+            ImageIcon imgIcon = new ImageIcon(img);
+            JButton button = new JButton(imgIcon) {
+                @Override
+                public boolean contains(int x, int y) {
+                    Dimension size = getSize();
 
-    public void changeImgColor(JButton btn, Color color){
-        
-        Icon icon = btn.getIcon();
-        if (icon == null){
-            System.out.println("Button hat kein Icon");
-            return;
-        }
+                    double scaleX = (double) size.width / img.getWidth();
+                    double scaleY = (double) size.height / img.getHeight();
 
-        if (icon instanceof ImageIcon){
-            BufferedImage img = toBufferedImg(((ImageIcon)icon).getImage());
-            if (img != null){
-                BufferedImage newImg = changeColor(img, color);
-                if (newImg != null) {
-                    btn.setIcon(new ImageIcon(newImg));
-                    btn.revalidate();
-                    btn.repaint();
+                    int imgX = (int) (x / scaleX);
+                    int imgY = (int) (y / scaleY);
                     
+                    if (imgX >= 0 && imgX < img.getWidth() && imgY >= 0 && imgY < img.getHeight()) {
+                        int alpha = (img.getRGB(imgX, imgY) >> 24) & 0xff;
+                        return alpha > 0;
+                    }
+                    return false;
                 }
-            }
+            };
+
+            button.setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
+            button.setBounds(initialPosition[0], initialPosition[1], img.getWidth(), img.getHeight());
+            button.setBorderPainted(false);
+            button.setContentAreaFilled(false);
+            button.addActionListener(e -> System.out.println("Button " + imgNumber + " clicked"));
+            return button;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-    }
-    private BufferedImage toBufferedImg(Image img){
-
-        if (img instanceof BufferedImage){
-            return (BufferedImage) img;
-        }
-
-        BufferedImage bImg = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-        
-        Graphics2D bGr= bImg.createGraphics();
-        bGr.drawImage(img, 0, 0, null);
-        bGr.dispose();
-
-        return bImg;
-    }
-    private BufferedImage changeColor(BufferedImage oldImg, Color color){
-
-        BufferedImage newImg = new BufferedImage(oldImg.getWidth(), oldImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-        for (int y = 0; y < oldImg.getHeight(); y++) {
-            for (int x = 0; x < oldImg.getWidth(); x++) {
-                int rgb = oldImg.getRGB(x, y);
-                Color col = new Color(rgb, true);
-                if (col.getAlpha() != 0){
-                    newImg.setRGB(x,y,color.getRGB());
-                } 
-                else{
-                    newImg.setRGB(x, y, rgb);
-                }
-            } 
-        }
-
-        return newImg;
     }
 }
