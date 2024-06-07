@@ -8,17 +8,22 @@ public class MapPanel extends JPanel {
 
     private static final int[][] INITIAL_BUTTON_POSITION = {{309,0}, {541,91}, {90,197}, {614,266}, {532,365}, {0,458}, {687,617}, {218,619}, {459,626}, {26,748}, {353,815}, {185,950}};
     private JButton[] buttons;
+    public Color [] color;
+    private Player player;
 
-    public MapPanel() {
+    public MapPanel(Player player) {
+        this.player = player;
         setLayout(null);
         setBackground(Color.CYAN);
 
         buttons = new JButton[12];
+        color = new Color[12];
         for (int i = 0; i < buttons.length; i++) {
-            buttons[i] = ImageButton.createImageButton(i, INITIAL_BUTTON_POSITION[i]);
+            color[i] = Color.GRAY;
+            buttons[i] = ImageButton.createImageButton(i, INITIAL_BUTTON_POSITION[i], color);
             add(buttons[i]);
         }
-
+        
         setBounds(0, 0, INITIAL_PANEL_WIDTH, INITIAL_PANEL_HEIGHT);
     }   
 
@@ -30,7 +35,7 @@ public class MapPanel extends JPanel {
         double heightRatio = (double) panelHeight / MapPanel.INITIAL_PANEL_HEIGHT;
 
         for (int i = 0; i < buttons.length && i < INITIAL_BUTTON_POSITION.length; i++) {
-            ButtonAdjuster.adjustButton(buttons[i],i, this, INITIAL_BUTTON_POSITION[i], panelWidth, panelHeight, widthRatio, heightRatio);
+            ButtonAdjuster.adjustButton(buttons[i], color[i],i, INITIAL_BUTTON_POSITION[i], panelWidth, panelHeight, widthRatio, heightRatio);
         }
     }
 }

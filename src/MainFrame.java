@@ -1,5 +1,6 @@
 
 
+import java.awt.Color;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
@@ -12,11 +13,11 @@ public class MainFrame extends JFrame {
 
     public MainFrame(){
         setTitle("Conquer the world!");
-        setSize(800, 1075);
+        setSize(800, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         
-        mapPanel = new MapPanel();
+        mapPanel = new MapPanel(new Player(Color.RED));
         
         add(mapPanel);   
         
