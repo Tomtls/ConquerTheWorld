@@ -1,17 +1,24 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class ImageButton {
-    public static JButton createImageButton(int imgNumber, int[] initialPosition, Color[] color) {
+public class IDButton extends JButton{
+
+    private static Font font = new Font("Arial", Font.BOLD, 20);
+    private int id;
+    
+    public IDButton(int id, Icon icon){
+        super(icon);
+        this.id = id;
+    }
+    
+    public static IDButton createImageButton(int imgID, int[] initialPosition, Color[] color, int[] units) {
         try {
-            BufferedImage img = ImageIO.read(new File("src/imgNumber/" + imgNumber + ".png"));
+            BufferedImage img = ImageIO.read(new File("src/imgNumber/" + imgID + ".png"));
             ImageIcon imgIcon = new ImageIcon(img);
-            JButton button = new JButton(imgIcon) {
+            IDButton button = new IDButton(imgID, imgIcon) {
                 @Override
                 public boolean contains(int x, int y) {
                     Dimension size = getSize();
@@ -34,19 +41,22 @@ public class ImageButton {
             button.setBounds(initialPosition[0], initialPosition[1], img.getWidth(), img.getHeight());
             button.setBorderPainted(false);
             button.setContentAreaFilled(false);
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e){
-                    color[imgNumber] =  Color.GREEN;
-                    
-                    System.out.println("Button " + imgNumber + " clicked");
-                    
-                }
-            });
+
+            //Text der Units 
+            button.setHorizontalTextPosition(SwingConstants.CENTER);
+            button.setVerticalTextPosition(SwingConstants.CENTER);
+            button.setFont(font);
+            button.setForeground(Color.BLACK);
+            button.setText(String.valueOf(units[imgID]));
+
             return button;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public int getId() {
+        return id;
     }
 }
