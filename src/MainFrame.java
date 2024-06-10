@@ -17,7 +17,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         
-        mapPanel = new MapPanel(new Player(Color.RED));
+        mapPanel = new MapPanel(new Player(Color.RED), new Player(Color.BLUE));
         
         add(mapPanel);   
         

@@ -13,23 +13,29 @@ public class MapPanel extends JPanel {
 
     private static final int[][] INITIAL_BUTTON_POSITION = {{309,0}, {541,91}, {90,197}, {614,266}, {532,365}, {0,458}, {687,617}, {218,619}, {459,626}, {26,748}, {353,815}, {185,950}};
     private JButton[] buttons;
-    private Player player;
+    private Player player1, player2;
     private int firstClickedButtonID = -1;
 
     public int[] units;
     public Color [] color;
 
-    public MapPanel(Player player) {
-        this.player = player;
+    public MapPanel(Player player1, Player player2) {
+        this.player1 = player1;
+        this.player2 = player2;
         setLayout(null);
         setBackground(Color.CYAN);
 
-        units = new int[12];
         color = new Color[12];
+        color[0] = player1.getColor();
+        color[color.length - 1] = player2.getColor();
+        for (int i = 1; i < INITIAL_BUTTON_POSITION.length-1; i++) {
+            color[i] = Color.GRAY;
+        }
+
+        units = new int[12];
         buttons = new JButton[12];
         for (int i = 0; i < buttons.length; i++) {
             units[i] = 10;
-            color[i] = Color.GRAY;
             buttons[i] = IDButton.createImageButton(i, INITIAL_BUTTON_POSITION[i], color, units);
             add(buttons[i]);
         }
@@ -39,7 +45,9 @@ public class MapPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e){
                 for (int i = 0; i < units.length; i++) {
-                    units[i]++;
+                    if(color[i] != Color.GRAY || units[i] < 10){
+                        units[i]++;
+                    }
                     buttons[i].setText(String.valueOf(units[i]));
                 }
             }
@@ -86,6 +94,9 @@ public class MapPanel extends JPanel {
                             IDButton targetButton = (IDButton) comp;
                             System.out.println("Mouse pressed button with ID " + firstClickedButtonID);
                             System.out.println("Mouse released over button with ID " + targetButton.getId());
+                            UnitsCalculator.calculateUnits(firstClickedButtonID, targetButton.getId(), color, units);
+                            adjustButtons();
+
                         }
                     }
                 }
