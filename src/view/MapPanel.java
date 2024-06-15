@@ -1,10 +1,20 @@
+package view;
+import javax.imageio.ImageIO;
 import javax.swing.*;
+
+
+import model.IDButton;
+import model.Player;
+import model.Unit;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class MapPanel extends JPanel {
     public static final int INITIAL_PANEL_WIDTH = 1050;
@@ -18,6 +28,7 @@ public class MapPanel extends JPanel {
 
     public int[] units;
     public Color [] color;
+    public Timer timer;
 
     public MapPanel(Player player1, Player player2) {
         this.player1 = player1;
@@ -36,12 +47,12 @@ public class MapPanel extends JPanel {
         buttons = new JButton[12];
         for (int i = 0; i < buttons.length; i++) {
             units[i] = 10;
-            buttons[i] = IDButton.createImageButton(i, INITIAL_BUTTON_POSITION[i], color, units);
+            buttons[i] = IDButton.createIdButton(i, color[i], units[i]);
             add(buttons[i]);
         }
         
         setBounds(0, 0, INITIAL_PANEL_WIDTH, INITIAL_PANEL_HEIGHT);
-        Timer timer = new Timer(1000, new ActionListener() {
+        timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e){
                 for (int i = 0; i < units.length; i++) {
@@ -52,18 +63,24 @@ public class MapPanel extends JPanel {
                 }
             }
         });
-        timer.start();
+        
     }   
 
-    public void adjustButtons() {
-        int panelWidth = getWidth();
-        int panelHeight = getHeight();
-        
-        double widthRatio = (double) panelWidth / MapPanel.INITIAL_PANEL_WIDTH;
-        double heightRatio = (double) panelHeight / MapPanel.INITIAL_PANEL_HEIGHT;
 
+
+    public void adjustButtons() {
+        int[] panelSize = { 
+            getWidth(), 
+            getHeight()
+        };
+
+        double[] sizeRatio = { 
+            (double) getWidth() / MapPanel.INITIAL_PANEL_WIDTH, 
+            (double) getHeight() / MapPanel.INITIAL_PANEL_HEIGHT
+        };
+        
         for (int i = 0; i < buttons.length && i < INITIAL_BUTTON_POSITION.length; i++) {
-            ButtonAdjuster.adjustButton(buttons[i], color[i],i, INITIAL_BUTTON_POSITION[i], panelWidth, panelHeight, widthRatio, heightRatio);
+            adjustButton(buttons[i], color[i],i, INITIAL_BUTTON_POSITION[i], panelSize, sizeRatio);
                         
             for (MouseListener listener : buttons[i].getMouseListeners()) {
                 buttons[i].removeMouseListener(listener);
@@ -94,7 +111,7 @@ public class MapPanel extends JPanel {
                             IDButton targetButton = (IDButton) comp;
                             System.out.println("Mouse pressed button with ID " + firstClickedButtonID);
                             System.out.println("Mouse released over button with ID " + targetButton.getId());
-                            UnitsCalculator.calculateUnits(firstClickedButtonID, targetButton.getId(), color, units);
+                            Unit.calculateUnits(firstClickedButtonID, targetButton.getId(), color, units);
                             adjustButtons();
 
                         }
@@ -103,5 +120,51 @@ public class MapPanel extends JPanel {
             });
         }
     }
+    public static void adjustPanel(JFrame frame, JPanel panel) {
+        int frameHeight = frame.getHeight();
+        int frameWidth = frame.getWidth();
 
+        double panelAspectRatio = MapPanel.PANEL_ASPECT_RATIO;
+        int panelWidth = (int) (frameWidth * 0.9);
+        int panelHeight = (int) (panelWidth / panelAspectRatio);
+
+        if (panelHeight > frameHeight * 0.9) {
+            panelHeight = (int) (frameHeight * 0.9);
+            panelWidth = (int) (panelHeight * panelAspectRatio);
+        }
+
+        int panelX = (frameWidth - panelWidth) / 2;
+        int panelY = (frameHeight - panelHeight) / 2;
+
+        panel.setBounds(panelX, panelY, panelWidth, panelHeight);
+    }
+    public static void adjustButton(JButton button, Color color, int btnNumber, int[] initialPosition, int[] panelSize, double[] sizeRatio) {
+
+        int xPosition = initialPosition[0] * panelSize[0] / MapPanel.INITIAL_PANEL_WIDTH;
+        int yPosition = initialPosition[1] * panelSize[1] / MapPanel.INITIAL_PANEL_HEIGHT;
+
+        try {
+            BufferedImage bImg = ImageIO.read(new File("src/imgNumber/" + btnNumber + ".png"));
+            Graphics2D g2d = bImg.createGraphics();
+
+            g2d.drawImage(bImg, 0, 0, null);            
+            g2d.setColor(color); 
+            g2d.setComposite(AlphaComposite.SrcAtop);
+            g2d.fillRect(0, 0, bImg.getWidth(), bImg.getHeight());
+    
+            g2d.dispose();
+            int buttonWidth = (int) (bImg.getWidth() * sizeRatio[0]);
+            int buttonHeight = (int) (bImg.getHeight() * sizeRatio[1]);
+            
+            Image scaledImg = bImg.getScaledInstance(buttonWidth, buttonHeight, Image.SCALE_SMOOTH);
+            ImageIcon imgIcon = new ImageIcon(scaledImg);
+            
+            button.setIcon(imgIcon);
+            button.setBounds(xPosition, yPosition, buttonWidth, buttonHeight);
+            button.revalidate();
+            button.repaint();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

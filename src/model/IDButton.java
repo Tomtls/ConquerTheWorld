@@ -1,3 +1,4 @@
+package model;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -14,11 +15,13 @@ public class IDButton extends JButton{
         this.id = id;
     }
     
-    public static IDButton createImageButton(int imgID, int[] initialPosition, Color[] color, int[] units) {
+    public static IDButton createIdButton(int id, Color color, int units) {
         try {
-            BufferedImage img = ImageIO.read(new File("src/imgNumber/" + imgID + ".png"));
-            ImageIcon imgIcon = new ImageIcon(img);
-            IDButton button = new IDButton(imgID, imgIcon) {
+            BufferedImage img = ImageIO.read(new File("src/imgNumber/" + id + ".png"));
+            BufferedImage colorizedImg = changeImageColor(img, color);
+            ImageIcon imgIcon = new ImageIcon(colorizedImg);
+
+            IDButton button = new IDButton(id, imgIcon) {
                 @Override
                 public boolean contains(int x, int y) {
                     Dimension size = getSize();
@@ -37,23 +40,38 @@ public class IDButton extends JButton{
                 }
             };
 
-            button.setPreferredSize(new Dimension(img.getWidth(), img.getHeight()));
-            button.setBounds(initialPosition[0], initialPosition[1], img.getWidth(), img.getHeight());
             button.setBorderPainted(false);
             button.setContentAreaFilled(false);
+            button.addUnits(button, units);
 
-            //Text der Units 
-            button.setHorizontalTextPosition(SwingConstants.CENTER);
-            button.setVerticalTextPosition(SwingConstants.CENTER);
-            button.setFont(font);
-            button.setForeground(Color.BLACK);
-            button.setText(String.valueOf(units[imgID]));
 
             return button;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void addUnits(IDButton button, int units){
+        //Text der Units 
+        button.setHorizontalTextPosition(SwingConstants.CENTER);
+        button.setVerticalTextPosition(SwingConstants.CENTER);
+        button.setForeground(Color.BLACK);
+        button.setFont(font);
+        button.setText(String.valueOf(units));        
+    }
+
+    public static BufferedImage changeImageColor(BufferedImage bImg, Color color){
+
+        Graphics2D g2d = bImg.createGraphics();
+
+        g2d.drawImage(bImg, 0, 0, null);
+        g2d.setColor(color); 
+        g2d.setComposite(AlphaComposite.SrcAtop);
+        g2d.fillRect(0, 0, bImg.getWidth(), bImg.getHeight());
+        g2d.dispose();
+
+        return bImg;
     }
 
     public int getId() {
