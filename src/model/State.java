@@ -1,15 +1,13 @@
 package model;
 
-import java.awt.Color;
-
 public class State {
     private int id;
-    private Color color;
+    private Player owner;
     private int units;
 
-    public State(int id, Color color, int units) {
+    public State(int id, Player owner, int units) {
         this.id = id;
-        this.color = color;
+        this.owner = owner;
         this.units = units;
     }
 
@@ -17,12 +15,13 @@ public class State {
         return id;
     }
 
-    public Color getColor() {
-        return color;
+    public Player getOwner() {
+        return owner;
     }
 
-    public void setColor(Color color) {
-        this.color = color;
+    public void changeOwner(Player newOwner, int units) {
+        this.owner = newOwner;
+        this.units = units; 
     }
 
     public int getUnits() {

@@ -21,7 +21,7 @@ public class MapPanel extends JPanel {
     public MapPanel(Game game){
         this.game = game;
         setLayout(null);
-        setBackground(Color.CYAN); //test
+        setBackground(Color.WHITE); //test
         
         addIdButtons();
         adjustPanel(Main.getFrame()); //adjust Size & Position(Center) of MapPanel
@@ -32,7 +32,7 @@ public class MapPanel extends JPanel {
         buttons = new IDButton[INITIAL_BUTTON_POSITION.length];
         for (int i = 0; i < buttons.length; i++) {
             State state = game.getState(i);
-            buttons[i] = IDButton.createIdButton(state.getId(), state.getColor(), state.getUnits());
+            buttons[i] = IDButton.createIdButton(state.getId(), state.getOwner().getColor(), state.getUnits());
             add(buttons[i]);
         }
     }

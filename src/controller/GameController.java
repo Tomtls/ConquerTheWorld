@@ -1,7 +1,5 @@
 package controller;
 
-
-
 import model.Game;
 import model.State;
 import view.IDButton;
@@ -16,6 +14,7 @@ import javax.swing.Timer;
 public class GameController extends MouseAdapter {
     private Game game;
     private MapPanel mapPanel;
+    private IDButton firstClickedButton;
 
     public GameController(Game game, MapPanel mapPanel) {
         this.game = game;
@@ -26,7 +25,7 @@ public class GameController extends MouseAdapter {
 
     private ActionListener updateUnits() {
         return e -> {
-            game.updateStates();
+            game.updateUnits();
             for (int i = 0; i < game.getStateCount(); i++) {
                 State state = game.getState(i);
                 mapPanel.updateButton(i,state);                
@@ -34,11 +33,17 @@ public class GameController extends MouseAdapter {
         };
     }
 
+    public Game getGame() {
+        return game;
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
         if (e.getSource() instanceof IDButton) {
             IDButton button = (IDButton) e.getSource();
-            // Logik für das Drücken der Maustaste hier hinzufügen
+            // Speichern des zuerst geklickten Buttons
+            firstClickedButton = button;
+            System.out.println("mouse pressed button with id: " + button.getId());
         }
     }
 
@@ -46,7 +51,17 @@ public class GameController extends MouseAdapter {
     public void mouseReleased(MouseEvent e) {
         if (e.getSource() instanceof IDButton) {
             IDButton button = (IDButton) e.getSource();
-            // Logik für das Loslassen der Maustaste hier hinzufügen
+            if (firstClickedButton != null) { 
+                if (buttonBelongsToCurrentPlayer(button)) {
+                    // Logik für das Loslassen der Maustaste hier hinzufügen
+                    System.out.println("mouse released button with id: " + button.getId());
+                }
+                firstClickedButton = null;
+            }
         }
+    }
+
+    private boolean buttonBelongsToCurrentPlayer(IDButton button) {
+        return game.getState(button.getId()).getOwner().equals(game.getCurrentPlayer());
     }
 }
