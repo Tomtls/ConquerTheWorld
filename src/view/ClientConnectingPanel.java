@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,10 +20,10 @@ public class ClientConnectingPanel extends JPanel {
     private Main main;
     private String name;
     private Color color;
-    private JTextField ipField;
+  //  private JTextField ipField;
     private JButton connectButton, backButton;
     
-    private final String ip = "127.0.0.1";//Default IP für Localhost
+    private final String ip = "127.0.0.1"; //Default IP für Localhost
 
     public ClientConnectingPanel (Main main, String name, Color color) {
         this.main = main;
@@ -40,24 +41,22 @@ public class ClientConnectingPanel extends JPanel {
 
         //Label  
         JLabel waiting = new JLabel("Connect to server...");
+        waiting.setFont(new Font("Arial", Font.BOLD, 24));
         gbc.gridx = 0;
         gbc.gridy = 0;
         add(waiting, gbc);
         
         //Label for player name field 
         JLabel playerName = new JLabel(name);
-        gbc.gridx = 0;
         gbc.gridy = 1;
         add(playerName, gbc);
         
         //Label for player name field 
         JLabel playerColor = new JLabel(color.toString());
-        gbc.gridx = 0;
         gbc.gridy = 2;
         add(playerColor, gbc);
         
-        ipField = new JTextField(ip);
-        gbc.gridx = 0;
+        JTextField ipField = new JTextField(ip);
         gbc.gridy = 3;
         add(ipField);
         
@@ -65,25 +64,22 @@ public class ClientConnectingPanel extends JPanel {
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //main.startGame(name, color, ipField.getText());
-                new Thread(() -> {
-                    GameClient client = new GameClient(name, color);
-                    client.sendPoints(ipField.getText());
-                }).start();
+                System.out.println("connected");
+                main.startClient(name, color, ipField.getText());
+                //controller.startTimer();
+
             }
         });
-        gbc.gridx = 0;
         gbc.gridy = 4;
-        add(playerColor, gbc);
+        add(connectButton, gbc);
 
         backButton = new JButton("Back");
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                main.startMultiplayer(name, color);
+                main.startMultiplayerSetup(name, color);
             }
         });
-        gbc.gridx = 0;
         gbc.gridy = 5;
         add(backButton, gbc);
 

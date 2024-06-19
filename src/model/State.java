@@ -1,6 +1,8 @@
 package model;
 
-public class State {
+import java.io.Serializable;
+
+public class State implements Serializable{
     private int id;
     private Player owner;
     private int units;

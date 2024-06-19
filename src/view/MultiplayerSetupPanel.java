@@ -25,14 +25,14 @@ public class MultiplayerSetupPanel extends JPanel {
         gbc.insets = new Insets(10, 10, 10, 10);
 
         JLabel titleLabel = new JLabel("Multiplayer Setup");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         add(titleLabel, gbc);
 
-        serverButton = new JButton("Start as Server");
+        serverButton = new JButton("Start Server");
         serverButton.addActionListener(e -> main.startAsServer(name, color));
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -40,7 +40,7 @@ public class MultiplayerSetupPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(serverButton, gbc);
 
-        clientButton = new JButton("Connect as Client");
+        clientButton = new JButton("Connect to Server");
         clientButton.addActionListener(e -> main.startAsClient(name, color));
         gbc.gridx = 1;
         add(clientButton, gbc);

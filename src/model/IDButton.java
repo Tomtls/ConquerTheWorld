@@ -1,4 +1,4 @@
-package view;
+package model;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -82,13 +82,25 @@ public class IDButton extends JButton{
         return coloredImage;
     }
 
+    public BufferedImage convertToBufferedImage(Image img) {
+        if (img instanceof BufferedImage) {
+            return (BufferedImage) img;
+        }
+
+        BufferedImage bImage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D bImageGraphics = bImage.createGraphics();
+        bImageGraphics.drawImage(img, 0, 0, null);
+        bImageGraphics.dispose();
+
+        return bImage;
+    }
+
     public int getId() {
         return id;
     }
 
-    
-
     public BufferedImage getImg() {
         return img;
     }
+    
 }

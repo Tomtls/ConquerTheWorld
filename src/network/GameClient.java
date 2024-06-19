@@ -1,49 +1,72 @@
 package network;
 
-import java.awt.Color;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import model.State;
+import model.Game;
+import model.Player;
 
 public class GameClient {
-    private State[] states;
-    private String name;
-    private Color color;
 
-    public GameClient(State[] states) {
-        this.states = states;
-    }
-    public GameClient(String name, Color color) {
-        this.name = name;
-        this.color = color;
+    private Player player;
+    private ObjectOutputStream objectOut;
+    private ObjectInputStream objectIn;
+    private Game game;
+    private Socket socket;
+
+    public GameClient(Player player) {
+        this.player = player;
     }
 
-    public void sendPoints(String hostName) {
+    public void connect(String ip) {
         System.out.println("Client gestartet!");
 
         int port = 8080; // Port-Nummer
 
-        try (Socket socket = new Socket(hostName, port)) {
-            ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream()); // ObjectOutputstream zum Server
-            BufferedReader socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream())); // Inputstream vom Server
-
-            objectOut.writeObject(states); // Sende ArrayList an den Server
-
-            String response = socketIn.readLine(); // Zeile vom Server empfangen
-            System.out.println("Server: "+response); // Zeile auf die Konsole schreiben
+        try  {
+            socket = new Socket(ip, port);
+            objectOut = new ObjectOutputStream(socket.getOutputStream()); // ObjectOutputstream zum Server
+            objectIn = new ObjectInputStream(socket.getInputStream()); // ObjectInputstream vom Server
+            
+            new Thread(() -> receiveGameState(objectIn)).start();
 
         } catch (UnknownHostException ue) {
-            System.out.println("Kein DNS-Eintrag für " + hostName);
+            System.out.println("Kein DNS-Eintrag für " + ip);
         } catch (NoRouteToHostException e) {
-            System.err.println("Nicht erreichbar " + hostName);
+            System.err.println("Nicht erreichbar " + ip);
         } catch (IOException e) {
             System.out.println("IO-Error");
+        }
+    }
+
+    private void receiveGameState(ObjectInputStream objectIn) {
+        try {
+            while (true) {
+                game = (Game) objectIn.readObject(); // Empfangen des Spielzustands vom Server
+                System.out.println("Aktueller Spielzustand empfangen ");
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public void closeConnection() {
+        try {
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -15,7 +16,7 @@ import javax.swing.JTextField;
 
 public class ServerWaitingPanel extends JPanel{
 
-    private String ip = "127.0.0.1";
+    private final String ip = "127.0.0.1";
     private String name;
     private Color color;
     private JButton backButton;
@@ -38,6 +39,7 @@ public class ServerWaitingPanel extends JPanel{
 
                 //Label for ip field
         JLabel waiting = new JLabel("Waiting for player to connect");
+        waiting.setFont(new Font("Arial", Font.BOLD, 24));
         gbc.gridx = 0;
         gbc.gridy = 0;
         add(waiting, gbc);
@@ -64,7 +66,8 @@ public class ServerWaitingPanel extends JPanel{
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                main.startMultiplayer(name, color);
+                main.startMultiplayerSetup(name, color);
+                // server stoppen?
             }
         });
         gbc.gridx = 0;

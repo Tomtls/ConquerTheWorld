@@ -1,37 +1,45 @@
 package model;
 
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Game {
+import controller.GameController;
+
+public class Game implements Serializable {
+    private final int amountStates = 12;
+    private final int initilUnts = 10;
     private List<State> states;
     private List<Player> players;
-    private Player currentPlayer;
 
-    public Game(Player player) {
-        initializePlayers(player);
-        currentPlayer = players.get(0);
+    public Game() {
+        initializePlayers();
         initializeStates();    
     }
 
-    private void initializePlayers(Player player) {
+    public void addPlayer(Player player){
+        players.add(player);
+        if (players.size() == 2) {
+            states.get(0).changeOwner(player, initilUnts);
+        }
+        if (players.size() == 3) {
+            states.get(amountStates - 1).changeOwner(player, initilUnts);
+        }
+        else{
+            //logik für random state bei mehr als 2 echten Spielern  
+        }
+    }
+
+    private void initializePlayers() {
         players = new ArrayList<>();
         players.add(new Player("", Color.GRAY));
-        players.add(player);
     }
     
     private void initializeStates(){
         states = new ArrayList<>();
-        states.add(new State(0, players.get(1), 10));
-        for (int i = 1; i < 11; i++) {
-            states.add(new State(i, players.get(0), 10));
-        }
-        if (players.size() > 2) {
-            states.add(new State(11, players.get(2), 10));
-        }
-        else{
-            states.add(new State(11, players.get(0), 10));
+        for (int i = 0; i < amountStates; i++) {
+            states.add(new State(i, players.get(0), initilUnts));
         }
     }
   
@@ -49,63 +57,43 @@ public class Game {
 
     public void updateUnits() {
         for (State state : states) {
-            if (state.getOwner().getColor() != Color.GRAY || state.getUnits() < 10) {
+            if (state.getOwner().getColor() != Color.GRAY || state.getUnits() < initilUnts) {
+                //nur bestetze States erhöhen
                 state.incrementUnits();
             }
         }
     }
 
     public void moveUnits(int from, int to) {
-        State fromState = getState(from);
-        State toState = getState(to);
-        //State have same owner
-        if (fromState.getOwner() == toState.getOwner()) {
-            toState.setUnits(toState.getUnits() + fromState.getUnits());
+
+        if (states.get(from).getOwner() == states.get(to).getOwner()) {
+            states.get(to).setUnits(states.get(to).getUnits() + states.get(from).getUnits());
         }
-        else{
-            int unitsDiff = toState.getUnits() - fromState.getUnits();
+        else {
+            int unitsDiff = states.get(to).getUnits() - states.get(from).getUnits();
             //attacker has more units
             if (unitsDiff < 0) {
                 unitsDiff *= -1;
-                toState.changeOwner(fromState.getOwner(), unitsDiff);
+                states.get(to).changeOwner(states.get(from).getOwner(), unitsDiff);
+                if (checkWinLoss(states.get(to).getOwner())) {
+                    System.out.println(states.get(to).getOwner().getName() + " hat gewonnen");
+                    GameController.timer.stop();
+                }
             }
-            //attacker has less units
             else{
-                toState.setUnits(unitsDiff);
+                states.get(to).setUnits(unitsDiff);
             }
         }
-        fromState.setUnits(0);
-    }
-    public void moveUnits(State fromState, State toState) {
-        //State have same owner
-        if (fromState.getOwner() == toState.getOwner()) {
-            toState.setUnits(toState.getUnits() + fromState.getUnits());
-        }
-        else{
-            int unitsDiff = toState.getUnits() - fromState.getUnits();
-            //attacker has more units
-            if (unitsDiff < 0) {
-                unitsDiff *= -1;
-                toState.changeOwner(fromState.getOwner(), unitsDiff);
-            }
-            //attacker has less units
-            else{
-                toState.setUnits(unitsDiff);
-            }
-        }
-        fromState.setUnits(0);
+        states.get(from).setUnits(0);
     }
 
-    public Player getCurrentPlayer(){
-        return currentPlayer;
-    }
 
-    public void setCurrentPlayer() {
-        if (currentPlayer == players.get(1) && players.size() > 2) {
-            currentPlayer = players.get(2);
+    public boolean checkWinLoss(Player player) {
+        for (State state : states) {
+            if(!state.getOwner().equals(player)) {
+                return false;
+            }
         }
-        else if (currentPlayer == players.get(2)) {
-            currentPlayer = players.get(1);
-        }
+        return true;
     }
 }

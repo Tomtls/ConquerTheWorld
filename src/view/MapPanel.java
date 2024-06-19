@@ -1,9 +1,12 @@
 package view;
 
 import model.Game;
+import model.IDButton;
 import model.State;
+import controller.GameController;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -15,20 +18,23 @@ public class MapPanel extends JPanel {
         {309,0}, {541,91}, {90,197}, {614,266}, {532,365}, {0,458}, 
         {687,617}, {218,619}, {459,626}, {26,748}, {353,815}, {185,950}
     };
-    private IDButton[] buttons;
+    private static IDButton[] buttons;
+    private double[] sizeRatio = {0.,0.};
     private Game game;
+    private GameController gameController;
 
-    public MapPanel(Game game){
+
+    public MapPanel(Game game) {
         this.game = game;
         setLayout(null);
         setBackground(Color.WHITE); //test
         
-        addIdButtons();
+        initializeIdButtons();
         adjustPanel(Main.getFrame()); //adjust Size & Position(Center) of MapPanel
 
     }   
 
-    private void addIdButtons(){
+    private void initializeIdButtons(){
         buttons = new IDButton[INITIAL_BUTTON_POSITION.length];
         for (int i = 0; i < buttons.length; i++) {
             State state = game.getState(i);
@@ -59,24 +65,25 @@ public class MapPanel extends JPanel {
     }
 
     public void adjustButtons() {
-          double[] sizeRatio = { 
-            (double) getWidth() / MapPanel.INITIAL_PANEL_WIDTH, 
-            (double) getHeight() / MapPanel.INITIAL_PANEL_HEIGHT
-        };
+        sizeRatio[0] = (double) getWidth() / MapPanel.INITIAL_PANEL_WIDTH;
+        sizeRatio[1] = (double) getHeight() / MapPanel.INITIAL_PANEL_HEIGHT;
         
         for (int i = 0; i < buttons.length && i < INITIAL_BUTTON_POSITION.length; i++) {
-            adjustButton(buttons[i], INITIAL_BUTTON_POSITION[i], sizeRatio);
+            adjustButton(buttons[i], INITIAL_BUTTON_POSITION[i]);
         }
     }
 
-    public static void adjustButton(IDButton button, int[] initialPosition, double[] sizeRatio) {
+    public void adjustButton(IDButton button, int[] initialPosition) {
         int xPosition = (int) (initialPosition[0] * sizeRatio[0]);
         int yPosition = (int) (initialPosition[1] * sizeRatio[1]);
-        
+        int id = button.getId();
+        Color color = game.getState(id).getOwner().getColor();
+
         BufferedImage img = button.getImg();
         int buttonWidth = (int) (img.getWidth() * sizeRatio[0]);
         int buttonHeight = (int) (img.getHeight() * sizeRatio[1]);
-        Image scaledImg = img.getScaledInstance(buttonWidth, buttonHeight, Image.SCALE_SMOOTH);
+        BufferedImage coloredImage = IDButton.changeImageColor(img, color);
+        Image scaledImg = coloredImage.getScaledInstance(buttonWidth, buttonHeight, Image.SCALE_SMOOTH);
         ImageIcon imgIcon = new ImageIcon(scaledImg);
         
         button.setIcon(imgIcon);
@@ -87,7 +94,18 @@ public class MapPanel extends JPanel {
     }
     
     public void updateButton(int index, State state) {
-        buttons[index].setText(String.valueOf(state.getUnits()));
+        buttons[index].setText(String.valueOf(state.getUnits())+ state.getOwner().getName());
+    }
+
+    public void setGameController(GameController gameController) {
+        this.gameController = gameController;
+        for (IDButton button : buttons) {
+            button.addMouseListener(gameController);
+        }
+    }
+
+    public void setGame (Game game) {
+        this.game = game;
     }
 
 }

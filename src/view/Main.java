@@ -10,6 +10,7 @@ import javax.swing.SwingUtilities;
 import controller.GameController;
 import model.Game;
 import model.Player;
+import network.GameClient;
 import network.GameServer;
 
 public class Main {
@@ -20,6 +21,7 @@ public class Main {
     private Game game;
     private MapPanel mapPanel;
     private GameServer server;
+    private GameClient client;
     private boolean serverStarted = false;
     private ServerWaitingPanel serverWaitingPanel;
     private GameController controller;
@@ -39,7 +41,6 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 900);
         frame.setLayout(null);
-
         setStartView();
     }
 
@@ -50,11 +51,14 @@ public class Main {
         frame.setVisible(true);
     }
 
-    public void startGame(String name, Color color){
+    public void startSingleGame(String name, Color color){
         player = new Player(name, color);
-        game = new Game(player);
+        game = new Game();
+        game.addPlayer(player);
         mapPanel = new MapPanel(game); 
-        GameController gameController = new GameController(game, mapPanel);        
+        GameController gameController = new GameController(game, mapPanel); 
+        mapPanel.setGameController(gameController);
+        gameController.startTimer();       
 
         frame.addComponentListener(new ComponentAdapter() {
             @Override
@@ -62,8 +66,7 @@ public class Main {
                 if (!resizing) {
                     resizing = true;
                     SwingUtilities.invokeLater(() -> {
-                        mapPanel.adjustPanel(frame);
-                        System.out.println("adjuse");  
+                        mapPanel.adjustPanel(frame);  
                         resizing = false;
                     });
                 }        
@@ -76,7 +79,7 @@ public class Main {
         frame.repaint();
     }
 
-    public void startMultiplayer(String name, Color color){
+    public void startMultiplayerSetup(String name, Color color){
         frame.remove(preGamePanel);
         frame.getContentPane().removeAll(); //entfernt alles
         multi = new MultiplayerSetupPanel(this, name, color);
@@ -85,22 +88,26 @@ public class Main {
         frame.repaint();
     }
     public void startAsServer(String name, Color color){
+        player = new Player(name, color);
+        game = new Game();
+        game.addPlayer(player);
+        mapPanel = new MapPanel(game);
+        GameController gameController = new GameController(game, mapPanel);
+        mapPanel.setGameController(gameController);
+
         frame.remove(multi);
 
-        game = new Game(new Player(name, color));
         serverWaitingPanel = new ServerWaitingPanel(this, name, color);
-        //controller = new GameController(game, mapPanel);
-        //mapPanel ändern?
         
         if (!serverStarted){
-            startStream(game);
+            server = new GameServer(game);
+            new Thread(server).start();
             serverStarted = true;
         }
 
-        frame.add(serverWaitingPanel);
+        frame.add(mapPanel);
         frame.revalidate();
         frame.repaint();
-        // warten bis client gestartet wird
     }
 
     public void startAsClient(String name, Color color){
@@ -110,15 +117,73 @@ public class Main {
         frame.revalidate();
         frame.repaint();
     }
+    
+    public void startClient(String name, Color color, String ip){
+        player = new Player(name, color);
+        client = new GameClient(player);
+        client.connect(ip);
+        frame.remove(clientConnectingPanel);
 
+        //test
+        Game game = new Game();
+
+        new Thread(() -> {
+            while (client.getGame() == null) {
+                try {
+                    Thread.sleep(100); // Warten Sie kurz, bevor Sie erneut prüfen
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+    
+            SwingUtilities.invokeLater(() -> {
+                // Initialisierung von mapPanel, falls es noch nicht initialisiert wurde
+                if (mapPanel == null) {
+                    mapPanel = new MapPanel(client.getGame()); // Stellen Sie sicher, dass client.getGame() den richtigen Spielzustand zurückgibt
+                    System.out.println("MapPanel initialisiert und hinzugefügt");
+                    frame.add(mapPanel);
+                    mapPanel.adjustPanel(frame); // Stellen Sie sicher, dass die Panelgröße angepasst wird
+                } else {
+                    // mapPanel ist bereits initialisiert, setzen Sie gegebenenfalls das Spiel neu
+                    mapPanel.setGame(client.getGame()); // Setzen Sie das Spiel erneut, falls notwendig
+                    System.out.println("MapPanel gesetzt und aktualisiert");
+                }
+    
+                GameController gameController = new GameController(client.getGame(), mapPanel);
+                mapPanel.setGameController(gameController);
+                gameController.startTimer();
+                frame.add(mapPanel);
+                frame.revalidate();
+                frame.repaint();
+    
+                // Debug-Ausgaben zur Überprüfung
+                System.out.println("MapPanel hinzugefügt: " + (mapPanel.getParent() != null));
+                System.out.println("Frame Größe: " + frame.getSize());
+            });
+        }).start();/* 
+    // Initialisierung von mapPanel, falls es noch nicht initialisiert wurde
+    if (mapPanel == null) {
+        mapPanel = new MapPanel(client.getGame()); // Stellen Sie sicher, dass client.getGame() den richtigen Spielzustand zurückgibt
+        frame.add(mapPanel);
+        mapPanel.adjustPanel(frame); // Stellen Sie sicher, dass die Panelgröße angepasst wird
+        frame.revalidate();
+        frame.repaint();
+    } else {
+        // mapPanel ist bereits initialisiert, setzen Sie gegebenenfalls das Spiel neu
+        mapPanel.setGame(client.getGame()); // Setzen Sie das Spiel erneut, falls notwendig
+    }
+
+    GameController gameController = new GameController(client.getGame(), mapPanel);
+    mapPanel.setGameController(gameController);
+
+    frame.remove(clientConnectingPanel);
+    frame.add(mapPanel);
+    frame.revalidate();
+    frame.repaint();*/
+    }
     public static JFrame getFrame() {
         return frame;
     }
-      
-        //Stream
-    public void startStream(Game game) {
-        new Thread(() -> {
-            server = new GameServer(game);
-        }).start();
-    }
+
+
 }

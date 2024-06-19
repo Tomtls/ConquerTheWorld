@@ -1,26 +1,30 @@
 package controller;
 
 import model.Game;
+import model.IDButton;
 import model.State;
-import view.IDButton;
 import view.MapPanel;
 
+import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 public class GameController extends MouseAdapter {
     private Game game;
     private MapPanel mapPanel;
-    private IDButton firstClickedButton;
+    private IDButton pressedButton;
+    public static Timer timer;
 
     public GameController(Game game, MapPanel mapPanel) {
         this.game = game;
         this.mapPanel = mapPanel;
-        Timer timer = new Timer(1000, updateUnits());
-        timer.start();
+        timer = new Timer(1000, updateUnits());
+        
     }
 
     private ActionListener updateUnits() {
@@ -33,35 +37,41 @@ public class GameController extends MouseAdapter {
         };
     }
 
+    public void startTimer(){
+        timer.start();
+    }
+
     public Game getGame() {
         return game;
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.getSource() instanceof IDButton) {
-            IDButton button = (IDButton) e.getSource();
-            // Speichern des zuerst geklickten Buttons
-            firstClickedButton = button;
-            System.out.println("mouse pressed button with id: " + button.getId());
+        if (SwingUtilities.isLeftMouseButton(e) && e.getSource() instanceof IDButton) {
+            pressedButton = (IDButton) e.getSource();
+            pressedButton.getModel().setArmed(true);
+            pressedButton.getModel().setPressed(true);
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (e.getSource() instanceof IDButton) {
-            IDButton button = (IDButton) e.getSource();
-            if (firstClickedButton != null) { 
-                if (buttonBelongsToCurrentPlayer(button)) {
-                    // Logik für das Loslassen der Maustaste hier hinzufügen
-                    System.out.println("mouse released button with id: " + button.getId());
-                }
-                firstClickedButton = null;
+        if (SwingUtilities.isLeftMouseButton(e) && pressedButton != null) {
+            pressedButton.getModel().setArmed(false);
+            pressedButton.getModel().setPressed(false);
+
+            Point pointOnScreen = e.getLocationOnScreen();
+            SwingUtilities.convertPointFromScreen(pointOnScreen, pressedButton.getParent());
+            Component comp = SwingUtilities.getDeepestComponentAt(pressedButton.getParent(), pointOnScreen.x, pointOnScreen.y);
+            
+            if (comp instanceof IDButton && comp != pressedButton) {
+                IDButton targetButton = (IDButton) comp;
+                if (targetButton != pressedButton && targetButton != null && timer.isRunning()) {
+                    game.moveUnits(pressedButton.getId(), targetButton.getId());
+                }                
             }
+            pressedButton = null;
         }
     }
 
-    private boolean buttonBelongsToCurrentPlayer(IDButton button) {
-        return game.getState(button.getId()).getOwner().equals(game.getCurrentPlayer());
-    }
 }

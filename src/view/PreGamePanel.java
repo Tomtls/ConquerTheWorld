@@ -4,19 +4,36 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PreGamePanel extends JPanel {
     private JButton startButton, multiplayerButton;
     private JTextField playerNameField;
     private Main main;
 
-    private JComboBox<Color> colorComboBox;
+    private JComboBox<String> colorComboBox;
+    private String[] colors = { "RED", "BLUE", "GREEN", "CYAN", "MAGENTA", "PINK", "ORANGE", "YELLOW"};
 
+    private Map<String, Color> colorMap;    
     public PreGamePanel(Main main) {
         this.main = main;
         setBounds(0,0,800,600);
         setLayout(new GridBagLayout());
+        initializeColorMap();
         createComponents();
+    }
+
+    private void initializeColorMap() {
+        colorMap = new HashMap<>();
+        colorMap.put("RED", Color.RED);
+        colorMap.put("BLUE", Color.BLUE);
+        colorMap.put("GREEN", Color.GREEN);
+        colorMap.put("CYAN", Color.CYAN);
+        colorMap.put("MAGENTA", Color.MAGENTA);
+        colorMap.put("PINK", Color.PINK);
+        colorMap.put("ORANGE", Color.ORANGE);
+        colorMap.put("YELLOW", Color.YELLOW);
     }
 
     private void createComponents() {
@@ -31,17 +48,19 @@ public class PreGamePanel extends JPanel {
         add(playerLabel, gbc);
 
         //Player name field
-        playerNameField = new JTextField(15);
-        gbc.gridx = 1;
+        playerNameField = new JTextField(10);
+        gbc.gridy = 1;
         add(playerNameField, gbc);
 
+        //Label for player name field 
+        JLabel colorLabel = new JLabel("Player Color:");
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        add(colorLabel, gbc);
+
         // ComboBox for selecting color
-        colorComboBox = new JComboBox<>(new Color[] {
-            Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.ORANGE
-        });
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
+        colorComboBox = new JComboBox<>(colors);
+        gbc.gridy = 1;
         add(colorComboBox, gbc);
         //Start game button 
         startButton = new JButton("Start Game");
@@ -51,14 +70,13 @@ public class PreGamePanel extends JPanel {
                 if (playerNameField.getText().isEmpty()) {
                     playerNameField.setText("Username");
                 }
-                Color selectedColor = (Color) colorComboBox.getSelectedItem();
-                main.startGame(getPlayerName(), selectedColor);
+                String selectedColorName = (String) colorComboBox.getSelectedItem();
+                Color selectedColor = colorMap.get(selectedColorName);
+                main.startSingleGame(getPlayerName(), selectedColor);
             }
         });
         gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.gridy = 2;
         add(startButton, gbc);        
 
         //Multiplayer button
@@ -69,8 +87,9 @@ public class PreGamePanel extends JPanel {
                 if (playerNameField.getText().isEmpty()) {
                     playerNameField.setText("Username");
                 }
-                Color selectedColor = (Color) colorComboBox.getSelectedItem();
-                main.startMultiplayer(getPlayerName(), selectedColor);
+                String selectedColorName = (String) colorComboBox.getSelectedItem();
+                Color selectedColor = colorMap.get(selectedColorName);
+                main.startMultiplayerSetup(getPlayerName(), selectedColor);
                 
             }
         });
