@@ -3,7 +3,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -16,17 +19,16 @@ import network.GameServer;
 public class Main {
     private static JFrame frame;
     private PreGamePanel preGamePanel;
+    private MultiplayerSetupPanel multi;
+    private ClientConnectingPanel clientConnectingPanel;
+    private MapPanel mapPanel;
     private boolean resizing = false;
     private Player player;
     private Game game;
-    private MapPanel mapPanel;
     private GameServer server;
     private GameClient client;
-    private boolean serverStarted = false;
-    private ServerWaitingPanel serverWaitingPanel;
-    private GameController controller;
-    private MultiplayerSetupPanel multi;
-    private ClientConnectingPanel clientConnectingPanel;
+    private static ExecutorService executor = Executors.newCachedThreadPool();
+
 
     public Main(){
         frame = new JFrame("Conquer the world!");
@@ -44,7 +46,8 @@ public class Main {
         setStartView();
     }
 
-    private void setStartView(){
+    public void setStartView(){
+        frame.getContentPane().removeAll();
         frame.add(preGamePanel, BorderLayout.CENTER);
         frame.revalidate();
         frame.repaint();
@@ -53,12 +56,10 @@ public class Main {
 
     public void startSingleGame(String name, Color color){
         player = new Player(name, color);
-        game = new Game();
-        game.addPlayer(player);
+        game = new Game(player);
         mapPanel = new MapPanel(game); 
         GameController gameController = new GameController(game, mapPanel); 
-        mapPanel.setGameController(gameController);
-        gameController.startTimer();       
+        mapPanel.setGameController(gameController);      
 
         frame.addComponentListener(new ComponentAdapter() {
             @Override
@@ -87,27 +88,10 @@ public class Main {
         frame.revalidate();
         frame.repaint();
     }
-    public void startAsServer(String name, Color color){
-        player = new Player(name, color);
-        game = new Game();
-        game.addPlayer(player);
-        mapPanel = new MapPanel(game);
-        GameController gameController = new GameController(game, mapPanel);
-        mapPanel.setGameController(gameController);
-
-        frame.remove(multi);
-
-        serverWaitingPanel = new ServerWaitingPanel(this, name, color);
-        
-        if (!serverStarted){
-            server = new GameServer(game);
-            new Thread(server).start();
-            serverStarted = true;
-        }
-
-        frame.add(mapPanel);
-        frame.revalidate();
-        frame.repaint();
+    public void startAsServer(String name, Color color) {
+        server = new GameServer();
+        executor.execute(server::start);
+        startClient(name, color, "127.0.0.1");
     }
 
     public void startAsClient(String name, Color color){
@@ -119,14 +103,37 @@ public class Main {
     }
     
     public void startClient(String name, Color color, String ip){
+        frame.getContentPane().removeAll(); //test        
         player = new Player(name, color);
         client = new GameClient(player);
         client.connect(ip);
-        frame.remove(clientConnectingPanel);
-
-        //test
-        Game game = new Game();
-
+        int[] testCount = {0};
+        new Thread(() -> {
+            while (client.getGame() == null){
+                try {
+                    Thread.sleep(100); 
+                    testCount[0]++;
+                    System.out.println("fail "+testCount[0]);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            SwingUtilities.invokeLater(() -> {
+                if (mapPanel == null) {
+                    mapPanel = new MapPanel(client.getGame());
+                    frame.add(mapPanel, BorderLayout.CENTER);
+                    frame.revalidate();
+                    frame.repaint();
+                } else {
+                    mapPanel.setGame(client.getGame());
+                }
+                
+                GameController gameController = new GameController(client.getGame(), mapPanel, client);
+                mapPanel.setGameController(gameController);
+            });
+        }).start();
+/*
         new Thread(() -> {
             while (client.getGame() == null) {
                 try {
@@ -160,7 +167,7 @@ public class Main {
                 System.out.println("MapPanel hinzugefügt: " + (mapPanel.getParent() != null));
                 System.out.println("Frame Größe: " + frame.getSize());
             });
-        }).start();/* 
+        }).start(); 
     // Initialisierung von mapPanel, falls es noch nicht initialisiert wurde
     if (mapPanel == null) {
         mapPanel = new MapPanel(client.getGame()); // Stellen Sie sicher, dass client.getGame() den richtigen Spielzustand zurückgibt
@@ -185,5 +192,8 @@ public class Main {
         return frame;
     }
 
+    public void winnerPanel(Player player) {
+
+    }
 
 }

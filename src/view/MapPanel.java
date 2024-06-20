@@ -2,6 +2,7 @@ package view;
 
 import model.Game;
 import model.IDButton;
+import model.Player;
 import model.State;
 import controller.GameController;
 
@@ -22,7 +23,6 @@ public class MapPanel extends JPanel {
     private double[] sizeRatio = {0.,0.};
     private Game game;
     private GameController gameController;
-
 
     public MapPanel(Game game) {
         this.game = game;
@@ -94,7 +94,7 @@ public class MapPanel extends JPanel {
     }
     
     public void updateButton(int index, State state) {
-        buttons[index].setText(String.valueOf(state.getUnits())+ state.getOwner().getName());
+        buttons[index].setText(String.valueOf(state.getUnits()));
     }
 
     public void setGameController(GameController gameController) {
@@ -108,4 +108,11 @@ public class MapPanel extends JPanel {
         this.game = game;
     }
 
+    public void showWinnerPanel(Player player) {
+        removeAll();
+        WinnerPanel winnerPanel = new WinnerPanel(player);
+        add(winnerPanel);
+        revalidate();
+        repaint();
+    }
 }

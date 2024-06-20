@@ -12,11 +12,8 @@ public class Player implements Serializable{
         this.color = color;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
     
-    public Color getColor(){
-        return color;
-    }
+    public Color getColor(){ return color; }
+
 }

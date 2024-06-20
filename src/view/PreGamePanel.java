@@ -72,7 +72,7 @@ public class PreGamePanel extends JPanel {
                 }
                 String selectedColorName = (String) colorComboBox.getSelectedItem();
                 Color selectedColor = colorMap.get(selectedColorName);
-                main.startSingleGame(getPlayerName(), selectedColor);
+                main.startSingleGame(playerNameField.getText(), selectedColor);
             }
         });
         gbc.gridx = 0;
@@ -89,16 +89,12 @@ public class PreGamePanel extends JPanel {
                 }
                 String selectedColorName = (String) colorComboBox.getSelectedItem();
                 Color selectedColor = colorMap.get(selectedColorName);
-                main.startMultiplayerSetup(getPlayerName(), selectedColor);
+                main.startMultiplayerSetup(playerNameField.getText(), selectedColor);
                 
             }
         });
         gbc.gridx = 1;
         add(multiplayerButton, gbc);
-    }
-
-    private String getPlayerName() {
-        return playerNameField.getText();
     }
 
 }

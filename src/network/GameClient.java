@@ -15,8 +15,8 @@ public class GameClient {
     private Player player;
     private ObjectOutputStream objectOut;
     private ObjectInputStream objectIn;
-    private Game game;
     private Socket socket;
+    private Game game;
 
     public GameClient(Player player) {
         this.player = player;
@@ -32,7 +32,8 @@ public class GameClient {
             objectOut = new ObjectOutputStream(socket.getOutputStream()); // ObjectOutputstream zum Server
             objectIn = new ObjectInputStream(socket.getInputStream()); // ObjectInputstream vom Server
             
-            new Thread(() -> receiveGameState(objectIn)).start();
+            new Thread(() -> receiveGameModel(objectIn)).start();
+            System.out.println("Connected to server");
 
         } catch (UnknownHostException ue) {
             System.out.println("Kein DNS-Eintrag für " + ip);
@@ -43,15 +44,24 @@ public class GameClient {
         }
     }
 
-    private void receiveGameState(ObjectInputStream objectIn) {
+
+    public void receiveGameModel(ObjectInputStream objectIn) {
         try {
             while (true) {
-                game = (Game) objectIn.readObject(); // Empfangen des Spielzustands vom Server
-                System.out.println("Aktueller Spielzustand empfangen ");
+                game = (Game) objectIn.readObject();
+                
+                System.out.println("Spielmodell erfolgreich vom Server empfangen.");
             }
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        }
+    }
+
+    public void sendMove(int from, int to){
+        try {
+            objectOut.writeObject(new int[]{from, to});
+            objectOut.flush();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -65,8 +75,9 @@ public class GameClient {
             if (socket != null) {
                 socket.close();
             }
+            System.out.println("Verbindung zum Server geschlossen.");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Fehler beim Schließen der Verbindung: " + e.getMessage());
         }
     }
 

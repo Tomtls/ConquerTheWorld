@@ -3,6 +3,7 @@ package controller;
 import model.Game;
 import model.IDButton;
 import model.State;
+import network.GameClient;
 import view.MapPanel;
 
 import java.awt.Component;
@@ -18,32 +19,40 @@ public class GameController extends MouseAdapter {
     private Game game;
     private MapPanel mapPanel;
     private IDButton pressedButton;
+    private GameClient client;
+    private boolean multiplayer;
     public static Timer timer;
+
+    public GameController(Game game, MapPanel mapPanel, GameClient client) {
+        this.game = game;
+        this.mapPanel = mapPanel;
+        this.client = client;       
+        this.multiplayer = true; 
+    }
 
     public GameController(Game game, MapPanel mapPanel) {
         this.game = game;
         this.mapPanel = mapPanel;
+        this.multiplayer = false;
         timer = new Timer(1000, updateUnits());
-        
+        timer.start();
     }
-
+    
     private ActionListener updateUnits() {
         return e -> {
             game.updateUnits();
             for (int i = 0; i < game.getStateCount(); i++) {
                 State state = game.getState(i);
-                mapPanel.updateButton(i,state);                
+                mapPanel.updateButton(i,state);
+            }
+            if (game.isOver()) {
+                stopTimer();
+                SwingUtilities.invokeLater(() -> mapPanel.showWinnerPanel(game.getWinner()));
             }
         };
     }
 
-    public void startTimer(){
-        timer.start();
-    }
-
-    public Game getGame() {
-        return game;
-    }
+    public Game getGame() { return game; }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -67,11 +76,30 @@ public class GameController extends MouseAdapter {
             if (comp instanceof IDButton && comp != pressedButton) {
                 IDButton targetButton = (IDButton) comp;
                 if (targetButton != pressedButton && targetButton != null && timer.isRunning()) {
-                    game.moveUnits(pressedButton.getId(), targetButton.getId());
+                    int fromID = pressedButton.getId();
+                    int toID = targetButton.getId();
+                    game.moveUnits(fromID, toID);
+                    if (multiplayer){
+                        sendMoveToServer(fromID, toID);
+                    }
+                    else mapPanel.adjustButtons();
                 }                
             }
             pressedButton = null;
         }
+    }
+
+    private void sendMoveToServer(int fromID, int toID) {
+        try {
+            client.sendMove(fromID, toID);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    public static void stopTimer(){
+        timer.stop();
     }
 
 }

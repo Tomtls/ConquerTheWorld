@@ -44,6 +44,14 @@ public class MultiplayerSetupPanel extends JPanel {
         clientButton.addActionListener(e -> main.startAsClient(name, color));
         gbc.gridx = 1;
         add(clientButton, gbc);
+
+        JButton backButton = new JButton("Back");
+        backButton = new JButton("Back");
+        backButton.addActionListener(e -> main.setStartView());
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        add(backButton, gbc);
     }
 }
 

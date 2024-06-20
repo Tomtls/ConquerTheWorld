@@ -95,12 +95,8 @@ public class IDButton extends JButton{
         return bImage;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
-    public BufferedImage getImg() {
-        return img;
-    }
-    
+    public BufferedImage getImg() { return img; }
+
 }

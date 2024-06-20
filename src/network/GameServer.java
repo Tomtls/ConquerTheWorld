@@ -7,88 +7,102 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import controller.GameController;
 import model.Game;
+import model.Player;
 
-
-public class GameServer implements Runnable {
-    private List<ClientHandler> clients = new ArrayList<>();
+public class GameServer {
     private Game game;
+    private ServerSocket serverSocket;
+    private List<ObjectOutputStream> clientOutputs;
+    private int connectedClients = 0;
+    private Player[] players;
     
-    public GameServer(Game game) {
-        this.game = game;
+    public GameServer() {
+        clientOutputs = new ArrayList<>();
+        players = new Player[2];
     }
-    @Override
-    public void run() {
+    public void start(){
         int port = 8080;
+        	try {
+                serverSocket = new ServerSocket(port);
+                System.out.println("Server started");
 
-            try (ServerSocket server = new ServerSocket(port)) {
-                System.out.println("Server gestartet!");
-                
                 while (true) {
-                    Socket socket = server.accept();
-                    System.out.println("Client verbunden!");
-                    GameController.timer.start();
-                    ObjectOutputStream objectOut = new ObjectOutputStream(socket.getOutputStream());
-                    objectOut.writeObject(game);
-                    objectOut.flush();
-                   
-                    ClientHandler clientHandler = new ClientHandler(socket, this);
-                    clients.add(clientHandler);
-                    new Thread(clientHandler).start();
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("Client connected");
+
+                    ObjectOutputStream objactOut = new ObjectOutputStream(clientSocket.getOutputStream());
+                    clientOutputs.add(objactOut);
+                    connectedClients++;
+                    if (connectedClients == 2) {
+                        	initializeGame();
+                    }
+
+                    new Thread(() -> handleClient(clientSocket, objactOut)).start();
                 }
-            } catch (IOException e) {
-                System.out.println("Server konnte nicht gestartet werden!");
-                System.err.println(e.getMessage());
+            } catch (Exception e) {
                 e.printStackTrace();
             }
     }
 
-    public void broadcastGameState(){
-        for (ClientHandler client : clients) {
-            try {
-                client.sendGameState(game);
-            } catch (IOException e) {
-                e.printStackTrace();
+    private void handleClient(Socket clientSocket, ObjectOutputStream objactOut) {
+        try {
+            ObjectInputStream objectIn = new ObjectInputStream(clientSocket.getInputStream());
+            Player player = (Player) objectIn.readObject();
+            synchronized (this) {
+                players[connectedClients -1] = player;
+ 
             }
-        }
-    }
-    
 
-    private class ClientHandler implements Runnable {
-        private Socket socket;
-        private GameServer server;
-        private ObjectOutputStream out;
-        private ObjectInputStream in;
-
-        public ClientHandler(Socket socket, GameServer server) {
-            this.socket = socket;
-            this.server = server;
-            try {
-                this.out = new ObjectOutputStream(socket.getOutputStream());
-                this.in = new ObjectInputStream(socket.getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (true) {
-                    //empfang von Daten von Clients
-                    Object obj = in.readObject(); 
-                    server.broadcastGameState();
-
+            while (true) {
+                Object obj = objectIn.readObject();
+                if (obj instanceof int[]) {
+                    int[] move = (int[]) obj;
+                    handleMove(move[0], move[1]);
+                    sendGameStateToClients();
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initializeGame() {
+        game = new Game(players);
+        sendGameStateToClients();
+        startUnitUpdateTimer();
+        System.out.println("Spiel initialisiert");
+    }
+
+    private void handleMove(int sourceId, int targetId) {
+        game.moveUnits(sourceId, targetId);
+        System.out.println("Bewegung verarbeitet: von " + sourceId + " nach " + targetId);
+    }
+
+    private void sendGameStateToClients() {
+        for (ObjectOutputStream out : clientOutputs) {
+            try {
+                out.writeObject(game);
+                out.flush();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        public void sendGameState(Game game) throws IOException {
-            out.writeObject(game);
-            out.flush();
-        }
     }
+
+    private void startUnitUpdateTimer() {
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                game.updateUnits();
+                sendGameStateToClients();
+            }
+        }, 0, 1000); 
+        System.out.println("Timer gestartet!"); 
+    }
+
 }

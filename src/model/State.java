@@ -13,28 +13,19 @@ public class State implements Serializable{
         this.units = units;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
-    public Player getOwner() {
-        return owner;
-    }
+    public Player getOwner() { return owner; }
 
     public void changeOwner(Player newOwner, int units) {
         this.owner = newOwner;
         this.units = units; 
     }
 
-    public int getUnits() {
-        return units;
-    }
+    public int getUnits() { return units; }
 
-    public void setUnits(int units) {
-        this.units = units;
-    }
+    public void setUnits(int units) { this.units = units; }
 
-    public void incrementUnits() {
-        this.units++;
-    }
+    public void incrementUnits() { this.units++; }
+    
 }
