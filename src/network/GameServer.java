@@ -1,5 +1,8 @@
 package network;
 
+import model.Game;
+import model.Player;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,9 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import model.Game;
-import model.Player;
 
 public class GameServer {
     private Game game;

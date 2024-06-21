@@ -13,8 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import network.GameClient;
-
 public class ClientConnectingPanel extends JPanel {
     
     private Main main;

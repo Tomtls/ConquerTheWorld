@@ -1,5 +1,8 @@
 package network;
 
+import model.Game;
+import model.Player;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,8 +10,7 @@ import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import model.Game;
-import model.Player;
+
 
 public class GameClient {
 

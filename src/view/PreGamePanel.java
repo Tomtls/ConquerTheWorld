@@ -1,20 +1,16 @@
 package view;
 
-import javax.swing.*;
-
-import controller.GameController;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.*;
 public class PreGamePanel extends JPanel {
     private JButton startButton, multiplayerButton, loadGameButton;
     private JTextField playerNameField;
     private Main main;
-    private GameController gameController;
 
     private JComboBox<String> colorComboBox;
     private String[] colors = { "RED", "BLUE", "GREEN", "CYAN", "MAGENTA", "PINK", "ORANGE", "YELLOW"};
