@@ -20,6 +20,8 @@ public class MapPanel extends JPanel {
         {687,617}, {218,619}, {459,626}, {26,748}, {353,815}, {185,950}
     };
     private static IDButton[] buttons;
+    private JButton saveGame;
+    private JButton surrender;
     private double[] sizeRatio = {0.,0.};
     private Game game;
     private GameController gameController;
@@ -40,6 +42,16 @@ public class MapPanel extends JPanel {
             State state = game.getState(i);
             buttons[i] = IDButton.createIdButton(state.getId(), state.getOwner().getColor(), state.getUnits());
             add(buttons[i]);
+        }
+        if (game.isMultiplayer()){ 
+            surrender = new JButton("surrender");
+            surrender.addActionListener(e -> surrender());
+            add(surrender);
+        }
+        else{
+            saveGame = new JButton("stop and save game");
+            saveGame.addActionListener(e -> saveGame());
+            add(saveGame);
         }
     }
 
@@ -65,16 +77,17 @@ public class MapPanel extends JPanel {
     }
 
     public void adjustButtons() {
-        sizeRatio[0] = (double) getWidth() / MapPanel.INITIAL_PANEL_WIDTH;
-        sizeRatio[1] = (double) getHeight() / MapPanel.INITIAL_PANEL_HEIGHT;
+        sizeRatio[0] = getWidth() * 0.9 / MapPanel.INITIAL_PANEL_WIDTH;
+        sizeRatio[1] = getHeight() * 0.9 / MapPanel.INITIAL_PANEL_HEIGHT;
         
         for (int i = 0; i < buttons.length && i < INITIAL_BUTTON_POSITION.length; i++) {
             adjustButton(buttons[i], INITIAL_BUTTON_POSITION[i]);
         }
+        saveGame.setBounds(0, (int) (getHeight() * 0.9), getWidth(), (int) (getHeight() * 0.1));
     }
 
     public void adjustButton(IDButton button, int[] initialPosition) {
-        int xPosition = (int) (initialPosition[0] * sizeRatio[0]);
+        int xPosition = (int) (initialPosition[0] * sizeRatio[0]) + (int) (getWidth() * 0.1 / 2);
         int yPosition = (int) (initialPosition[1] * sizeRatio[1]);
         int id = button.getId();
         Color color = game.getState(id).getOwner().getColor();
@@ -114,5 +127,14 @@ public class MapPanel extends JPanel {
         add(winnerPanel);
         revalidate();
         repaint();
+    }
+
+    private void saveGame(){
+        gameController.saveGame("gameState.ser");
+        
+    }
+
+    private void surrender() {
+        gameController.surrender();
     }
 }

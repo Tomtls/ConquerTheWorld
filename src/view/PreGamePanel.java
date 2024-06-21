@@ -1,6 +1,9 @@
 package view;
 
 import javax.swing.*;
+
+import controller.GameController;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,9 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PreGamePanel extends JPanel {
-    private JButton startButton, multiplayerButton;
+    private JButton startButton, multiplayerButton, loadGameButton;
     private JTextField playerNameField;
     private Main main;
+    private GameController gameController;
 
     private JComboBox<String> colorComboBox;
     private String[] colors = { "RED", "BLUE", "GREEN", "CYAN", "MAGENTA", "PINK", "ORANGE", "YELLOW"};
@@ -95,6 +99,16 @@ public class PreGamePanel extends JPanel {
         });
         gbc.gridx = 1;
         add(multiplayerButton, gbc);
+
+        loadGameButton = new JButton("Load game");
+        loadGameButton.addActionListener(e -> loadGame());
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        add(loadGameButton, gbc);
+    }
+
+    private void loadGame(){
+        main.loadGame();
     }
 
 }

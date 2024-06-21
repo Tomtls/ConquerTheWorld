@@ -71,7 +71,7 @@ public class GameServer {
     }
 
     private void initializeGame() {
-        game = new Game(players);
+        this.game = new Game(players);
         sendGameStateToClients();
         startUnitUpdateTimer();
         System.out.println("Spiel initialisiert");
@@ -85,7 +85,7 @@ public class GameServer {
     private void sendGameStateToClients() {
         for (ObjectOutputStream out : clientOutputs) {
             try {
-                out.writeObject(game);
+                out.writeObject(this.game);
                 out.flush();
             } catch (IOException e) {
                 e.printStackTrace();

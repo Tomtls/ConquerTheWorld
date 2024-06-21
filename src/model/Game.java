@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class Game implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final int amountStates = 12;
     private final int initilUnts = 10;
     private State [] states;
@@ -55,7 +56,7 @@ public class Game implements Serializable {
             if (unitsDiff < 0) {
                 unitsDiff *= -1;
                 states[to].changeOwner(states[from].getOwner(), unitsDiff);
-                if (checkWinLoss(states[to].getOwner())) {
+                if (checkWinLoss(states[to].getOwner()) && !isOver) {
                     isOver = true;
                     winner = states[to].getOwner();
                     System.out.println(states[to].getOwner().getName() + " hat gewonnen");
@@ -72,7 +73,11 @@ public class Game implements Serializable {
 
     public boolean isOver() { return isOver; }
 
+    public void setIsOver(Boolean over) { this.isOver = over; }
+
     public Player getWinner() { return winner; }
+
+    public boolean isMultiplayer() { return multiplayer; }
 
     public boolean checkWinLoss(Player player) {
         return Arrays.stream(states).allMatch(state -> state.getOwner() == player);

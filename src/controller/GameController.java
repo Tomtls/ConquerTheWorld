@@ -4,6 +4,7 @@ import model.Game;
 import model.IDButton;
 import model.State;
 import network.GameClient;
+import view.Main;
 import view.MapPanel;
 
 import java.awt.Component;
@@ -11,11 +12,17 @@ import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 public class GameController extends MouseAdapter {
+    private Main main;
     private Game game;
     private MapPanel mapPanel;
     private IDButton pressedButton;
@@ -23,7 +30,8 @@ public class GameController extends MouseAdapter {
     private boolean multiplayer;
     public static Timer timer;
 
-    public GameController(Game game, MapPanel mapPanel, GameClient client) {
+    public GameController(Main main, Game game, MapPanel mapPanel, GameClient client) {
+        this.main = main;
         this.game = game;
         this.mapPanel = mapPanel;
         this.client = client;       
@@ -102,4 +110,31 @@ public class GameController extends MouseAdapter {
         timer.stop();
     }
 
+    public void surrender(){
+        game.setIsOver(true);
+    }
+
+        // Methoden zum Speichern und Laden des Spielstands
+    public void saveGame(String filePath) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            oos.writeObject(this.game);
+            timer.stop();
+            main.setStartView();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadGame(String filePath) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+            this.game = (Game) ois.readObject();
+            // Aktualisieren Sie die MapPanel mit den geladenen Spieldaten
+            for (int i = 0; i < game.getStateCount(); i++) {
+                State state = game.getState(i);
+                mapPanel.updateButton(i, state);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -48,7 +48,7 @@ public class GameClient {
     public void receiveGameModel(ObjectInputStream objectIn) {
         try {
             while (true) {
-                game = (Game) objectIn.readObject();
+                this.game = (Game) objectIn.readObject();
                 
                 System.out.println("Spielmodell erfolgreich vom Server empfangen.");
             }
@@ -67,7 +67,7 @@ public class GameClient {
     }
 
     public Game getGame() {
-        return game;
+        return this.game;
     }
 
     public void closeConnection() {
