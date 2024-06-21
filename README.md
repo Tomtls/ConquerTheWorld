@@ -146,7 +146,6 @@ Hier ist die vollständige Ordnerstruktur des Projekts:
 
 ```
 src
-├── Main.java
 ├── network
 │   ├── GameClient.java
 │   └── GameServer.java
